@@ -30,8 +30,9 @@ logger = logging.getLogger(__name__)
 
 # ------------------- Calculator Routes -------------------
 @app.get("/")
-def root():
-    return {"message": "Welcome to FastAPI Calculator & Secure User API"}
+def root(request: Request):
+    """Render the homepage template with the calculator UI."""
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/add")
 def add_route(data: dict):
@@ -62,8 +63,12 @@ def divide_route(data: dict):
     try:
         a, b = data["a"], data["b"]
         return {"result": divide(a, b)}
+    except ValueError as e:
+        # Expected by tests — sends {"error": "..."}
+        return JSONResponse(status_code=400, content={"error": str(e)})
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        return JSONResponse(status_code=500, content={"error": "Internal Server Error"})
+
 
 # ------------------- User Registration -------------------
 @app.post("/register")
@@ -81,3 +86,10 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+if __name__ == "__main__":
+    # Run with: python main.py (used by tests' subprocess)
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
