@@ -60,6 +60,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+      - name: Test DockerHub Login
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          echo "✅ DockerHub login successful!"
 
       - name: Build and Push Docker image
         uses: docker/build-push-action@v5
